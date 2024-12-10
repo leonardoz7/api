@@ -1,44 +1,44 @@
-const db= require('../db/db');
+const db = require('../db/db');
 //MODULO DE CONEXÃO COM O BANCO DE DADOS 
 const Joi = require('joi')
 //biblioteca de validação de dados
 const bcrypt = require('bcrypt');
 
 const clienteSchema = Joi.object({
-    cpf: Joi.string.length(11).required(),
+    cpf: Joi.string().length(11).required(),
     nome: Joi.string().required().max(50),
     endereco: Joi.string().required().max(80),
     bairro: Joi.string().required().max(30),
     cidade: Joi.string().required().max(30),
     cep: Joi.string().required(),
-    telefone:Joi.string().required(),
-    email:Joi.string().email().max(50),
-    senha:Joi.string().min(6).max(300)
+    telefone: Joi.string().required(),
+    email: Joi.string().email().max(50),
+    senha: Joi.string().min(6).max(300)
 })
 
 //listar todos os clientes
-exports.listarClientes = async(req, res) =>{
-    try{
-        const [result] = await db.query('SELECT * FROM cliente')
-        res.json(result)
-    }catch(err) {
-        console.error('Erro ao buscar clientes',err);
-        res.status(500).json({error: 'Erro interno do servidor'})
+exports.listarClientes = async (req, res) => {
+    try {
+        const [result] = await db.query('SELECT * FROM cliente');
+        res.json(result);
+    } catch (err) {
+        console.error('Erro ao buscar clientes', err);
+        res.status(500).json({ error: 'Erro interno do servidor' })
     }
 };
 
-exports.listarClientes = async(req, res) =>{
-    const {cpf} = req.params;
-    try{
-        const [result] = await db.query('SELECT * FROM cliente WHERE cpf = ?',[cpf])
+exports.listarClientesCpf = async (req, res) => {
+    const { cpf } = req.params;
+    try {
+        const [result] = await db.query('SELECT * FROM cliente WHERE cpf = ?', [cpf])
         if (result.length === 0) {
-            return res.status(404).json({error: 'Cliente não encontrado'})
+            return res.status(404).json({ error: 'Cliente não encontrado' })
         }
         res.json(result[0])
-    
-    }catch (err) {
+
+    } catch (err) {
         console.error('Erro ao buscar cliente:', err);
-        res.status(500).json({error: 'Erro interno no servidor'})
+        res.status(500).json({ error: 'Erro interno no servidor' });
     }
 };
 
@@ -59,3 +59,43 @@ exports.adicionarCliente = async (req, res) => {
         res.status(500).json({ error: 'Erro ao adicionar cliente' });
     }
 };
+
+exports.atualizarCliente = async (req, res) => {
+    const { cpf } = req.params;
+    const { nome, endereco, bairro, cidade, cep, telefone, email, senha } = req.body;
+    // Validando dados
+    const { error } = clienteSchema.validate({ cpf, nome, endereco, bairro, cidade, cep, telefone, email, senha });
+    if (error) {
+        return res.status(400).json({ error: error.details[0].message });
+    }
+    try {
+        const [result] = await db.query('SELECT * FROM CLIENTE WHERE cpf = ?', [cpf]);
+        if (result.length === 0) {
+            return res.status(404).json({ error: 'Cliente não encontrado' });
+        }
+        const hash = await bcrypt.hash(senha, 10);
+
+        const clienteAtualizado = { cpf, nome, endereco, bairro, cidade, cep, telefone, email, senha: hash };
+        await db.query('UPDATE cliente SET ? WHERE cpf = ?', [clienteAtualizado, cpf]);
+        res.json({ message: 'Cliente atualizado com sucesso' });
+    } catch (err) {
+        console.error('Erro ao atualizar cliente:', err);
+        res.status(500), json({ error: 'Erro ao atualizar' });
+    }
+};
+
+exports.deletarCliente = async (req, res) => {
+    const { cpf } = req.params;
+    try {
+        const [result] = await db.query('SELECT * FROM cliente WHERE cpf = ?'[cpf]);
+        if (result.length === 0) {
+            return res.status(404).json({ error: 'Cliente não encontrada' });
+        }
+        await db.query('DELETE FROM cliente WHERE cpf = ?', [cpf]);
+        res.json({ message: 'Cliente deletado com sucesso' });
+    } catch (err) {
+        console.error('Erro ao deletar cliente ', err);
+        res.status(500).json({ error: 'Erro ao deletar cliente' });
+
+    }
+}

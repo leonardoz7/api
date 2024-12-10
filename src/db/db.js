@@ -17,8 +17,8 @@ const db = mysql.createPool({
         console.log('Conexão com o banco de dados estabelecida com sucesso');
         connection.release(); //Libera a conexão de valia para a pool
 
-    } catch(err) {
-        console.error('Erro ao conectar ao banco de dados',err);     
+    } catch (err) {
+        console.error('Erro ao conectar ao banco de dados', err);
     }
-}) ();
+})();
 module.exports = db;
