@@ -8,7 +8,6 @@ const entregadorSchema = Joi.object({
     nomeEntregador: Joi.string().required().max(50),
 })
  
-
 exports.listaEntregador = async (req, res) => {
     try {
         const [result] = await db.query('SELECT * FROM ENTREGADOR')
@@ -34,7 +33,6 @@ exports.listaEntregadorID = async (req, res) => {
 }
  
 
- 
 exports.adicionarEntregador = async (req, res) => {
     const { idEntregador, cnh, telefoneEntregador, nomeEntregador} = req.body;
     const { error } = entregadorSchema.validade({ idEntregador, cnh, telefoneEntregador, nomeEntregador });
