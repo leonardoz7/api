@@ -1,14 +1,13 @@
 const db = require('../db/db');
 const Joi = require('joi');
 const pedidoSchema = Joi.object({
-    idpedido: Joi.string().length(30).required().max(50),
-    datapedido: Joi.string().required().max(50),
+    dataPedido: Joi.string().required().max(50),
     qtdeItens: Joi.string().required(),
-    formaPgto: Joi.string().required(),
-    valortotal: Joi.string().required(),
+    formaPagto: Joi.string().required(),
+    valorTotal: Joi.string().required(),
     observacao: Joi.string().required().max(50),
     cpf: Joi.string().length(11).required().max(50),
-    idEntregador: Joi.string().length(30).required().max(50)
+    idEntregador: Joi.string().required().max(50)
 })
  
 exports.listarpedido = async (req, res) => {
@@ -38,28 +37,36 @@ exports.listarpedidosid = async (req, res) => {
 }
  
 exports.adicionarPedido = async (req, res) => {
-    const { } = req.body;
- 
-    const { error } = pedidoSchema.validade({
-        idpedido,
-        datapedido, qtdeItens, formaPgto, valortotal, observacao, cpf, idEntregador
+    const { dataPedido, qtdeItens, formaPagto, valorTotal, observacao, cpf, idEntregador } = req.body;
+    const { error } = pedidoSchema.validate({
+        dataPedido,
+        qtdeItens,
+        formaPagto,
+        valorTotal,
+        observacao,
+        cpf,
+        idEntregador
     });
+
     if (error) {
-        return res.status(400).json({ error: error.details[0] })
-    } try {
-        const novopedido = { idpedido, datapedido, qtdeItens, formaPgto, valortotal, observacao, cpf, idEntregador };
+        return res.status(400).json({ error: error.details[0].message });
+    }
+
+    try {
+        const novopedido = {dataPedido, qtdeItens, formaPagto, valorTotal, observacao, cpf, idEntregador };
         await db.query('INSERT INTO pedido SET ?', novopedido);
-        res.json({ menssage: 'pedido adicionado com sucesso' });
+        res.json({ message: 'Pedido adicionado com sucesso' });
     } catch (err) {
-        console.error('Erro ao adiconar pedido', err);
-        res.status(500).json({ error: 'Erro ao adicionar pedido' })
+        console.error('Erro ao adicionar pedido:', err);
+        res.status(500).json({ error: 'Erro ao adicionar pedido' });
     }
 };
+
  
 exports.atualizarpedido = async (req, res) => {
     const { idpedido } = req.params;
-    const { datapedido, qtdeItens, formaPgto, valortotal, observacao, cpf, idEntregador } = req.body;
-    const { error } = produtoSchema.validate({ idpedido,datapedido,qtdeItens,formaPgto,valortotal,observacao,cpf,idEntregador});
+    const { idPedido,dataPedido, qtdeItens, formaPagto, valorTotal, observacao, cpf, idEntregador } = req.body;
+    const { error } = produtoSchema.validate({ idPedido,dataPedido, qtdeItens, formaPagto, valorTotal, observacao, cpf, idEntregador});
     if (error) {
         return res.status(400).json({ error: error.details[0].message });
  
@@ -103,5 +110,5 @@ exports.buscarpedidoCPF =async(req,res)=>{
         console.error('Erro ao buscar pedido',err);
        res.status(500).json({error:'Erro interno do servidor'})
     }
-};
+};  
  

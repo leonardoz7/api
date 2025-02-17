@@ -13,6 +13,7 @@ const clienteRoutes = require('./routes/clienteroutes');
 const produtoRoutes = require('./routes/produtoroutes');
 const entregadorRoutes = require('./routes/entregadorroutes');
 const pedidoroutes = require('./routes/pedidoroutes')
+const itempedidoRoutes=require('./routes/itempedidoroutes')
 
 const corsOptions = {
     origin: ['http://localhost:3333', 'https://meudominio.com'], //Lista de origens permitidas
@@ -47,6 +48,8 @@ app.use('/',produtoRoutes);
 app.use('/',entregadorRoutes);
 
 app.use('/',pedidoroutes);
+
+app.use('/',itempedidoRoutes)
  
 //middleware de tratamento de erros
 app.use((err, req, res, next) => {
